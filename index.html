@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Видео в углу</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Стиль для контейнера видео в левом нижнем углу */
+    .video-container {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      width: 144px;  /* 80% от 180px */
+      height: 222px; /* 80% от 278px */
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      transition: width 0.3s, height 0.3s, opacity 0.5s ease, transform 0.3s ease; /* Добавляем анимацию для увеличения */
+      opacity: 1; /* Начальная видимость */
+    }
+
+    /* Эффект при наведении на маленькое видео */
+    .video-container:hover {
+      transform: scale(1.05); /* Увеличиваем видео на 10% */
+      transition: 0.5s;
+    }
+
+    .video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Крестик для закрытия маленького видео */
+    .close-small-video {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background-color: rgba(0, 0, 0, 0.371); /* Полупрозрачный фон */
+      color: rgba(255, 255, 255, 0.796);
+      font-size: 14px; /* Уменьшаем размер крестика */
+      border: none;
+      padding: 5px;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 10;
+      width: 20px;  /* Уменьшаем размер кнопки */
+      height: 20px; /* Уменьшаем размер кнопки */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Стиль для ярлычка Play */
+    .shortcut {
+      position: fixed;
+      bottom: 10px;
+      left: -70px; /* Начальная позиция за экраном */
+      width: 60px;
+      height: 60px;
+      background-color: #4CAF50; /* Зеленый цвет для Play */
+      color: #fff;
+      font-size: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: left 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Эффект при наведении на ярлычок Play */
+    .shortcut:hover {
+      background-color: #388E3C; /* Темнее зеленый при наведении */
+      transform: scale(1.1); /* Легкое увеличение */
+    }
+
+    /* Стиль для модального окна */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 90%;
+      max-width: 1000px; /* Максимальная ширина для модального окна */
+      height: 80%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content video {
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      object-fit: contain; /* Используем contain, чтобы сохранить пропорции видео */
+    }
+
+    .modal .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 30px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    /* Адаптивность для малых экранов */
+    @media (max-width: 768px) {
+      .video-container {
+        width: 96px;  /* 80% от 120px */
+        height: 148px; /* 80% от 185px */
+      }
+
+      .modal-content {
+        width: 95%;
+        height: 70%;
+      }
+
+      .shortcut {
+        left: -35px;
+        width: 50px;  /* Уменьшаем размер кнопки на экранах 768px */
+        height: 50px;
+        font-size: 28px; /* Уменьшаем размер шрифта */
+      }
+    }
+
+    /* Для очень маленьких экранов (например, телефонов) */
+    @media (max-width: 480px) {
+      .video-container {
+        width: 80px;  /* 80% от 100px */
+        height: 117px; /* 80% от 146px */
+      }
+
+      .modal-content {
+        width: 95%;
+        height: 60%;
+      }
+
+      .shortcut {
+        left: -70px;
+        width: 45px;  /* Еще больше уменьшаем кнопку */
+        height: 45px;
+        font-size: 24px; /* Уменьшаем размер шрифта */
+      }
+    }
+
+    /* Для десктопов */
+    @media (min-width: 1024px) {
+      .shortcut {
+        width: 50px;  /* Уменьшаем размер кнопки на экранах 1024px */
+        height: 50px;
+        font-size: 28px; /* Уменьшаем размер шрифта */
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Контейнер для видео -->
+  <div class="video-container" onclick="openModal()">
+    <video autoplay muted loop>
+      <source src="https://church-site.ru/video/video_3.mp4" type="video/mp4">
+      Ваш браузер не поддерживает видео.
+    </video>
+
+    <!-- Кнопка для закрытия маленького видео -->
+    <button class="close-small-video" onclick="closeSmallVideo(event)">×</button>
+  </div>
+
+  <!-- Ярлычок для выдвижения видео с современным значком Play -->
+  <div class="shortcut" onclick="openVideoFromShortcut()">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="32" height="32">
+      <path d="M8 5v14l11-7z"/>
+    </svg>
+  </div>
+
+  <!-- Модальное окно с видео -->
+  <div class="modal" id="modal" onclick="closeModal(event)">
+    <div class="modal-content">
+      <video controls autoplay muted>
+        <source src="https://church-site.ru/video/video_3.mp4" type="video/mp4">
+        Ваш браузер не поддерживает видео.
+      </video>
+      <span class="close" onclick="closeModal(event)">&times;</span>
+    </div>
+  </div>
+
+  <script>
+    let videoContainer = document.querySelector('.video-container');
+    let shortcut = document.querySelector('.shortcut');
+
+    // Открытие модального окна
+    function openModal() {
+      // Скрыть маленькое видео и ярлычок
+      videoContainer.style.opacity = 0;
+      shortcut.style.left = '-70px';  // Прячем ярлычок
+      setTimeout(() => {
+        videoContainer.style.display = 'none';  // Скрываем контейнер с видео после анимации
+      }, 500); // 500 мс — это время анимации исчезновения
+
+      // Открыть модальное окно
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    // Закрытие модального окна
+    function closeModal(event) {
+      if (event.target === event.currentTarget || event.target.classList.contains('close')) {
+        document.getElementById('modal').style.display = 'none';
+
+        // Скрыть маленькое видео после закрытия модального окна
+        videoContainer.style.opacity = 0;
+        setTimeout(() => {
+          videoContainer.style.display = 'none';
+          shortcut.style.left = '10px'; // Ярлычок снова появляется слева
+        }, 500); // 500 мс — время анимации исчезновения
+      }
+    }
+
+    // Закрытие маленького видео с плавной анимацией
+    function closeSmallVideo(event) {
+      event.stopPropagation(); // Останавливаем всплытие события, чтобы не вызвать открытие модального окна
+      videoContainer.style.opacity = 0;  // Начинаем анимацию исчезновения
+      setTimeout(() => {
+        videoContainer.style.display = 'none';  // Прячем контейнер после завершения анимации
+        shortcut.style.left = '10px';  // Появляем ярлычок слева
+      }, 500); // 500 мс — это время анимации (соответствует transition)
+    }
+
+    // Открытие видео при клике на ярлычок
+    function openVideoFromShortcut() {
+      videoContainer.style.display = 'block'; // Показываем контейнер
+      videoContainer.style.opacity = 1; // Делаем его видимым
+      videoContainer.style.transition = 'opacity 0.5s ease'; // Плавное появление
+      shortcut.style.left = '-70px'; // Прячет ярлычок снова
+    }
+  </script>
+
+</body>
+</html>
